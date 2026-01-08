@@ -67,8 +67,53 @@ Implementation workflow:
 - **Pattern following**: Apply plan.md recommended patterns consistently
 - **Atomic commits**: One commit per task with descriptive message
 
-**Workflow position**: `spec → clarify → plan → tasks → implement → optimize → preview → ship`
+**Workflow position**: `spec → clarify → plan → [approval] → tasks → [approval] → implement → optimize → preview → ship`
 </objective>
+
+---
+
+## APPROVAL GATE CHECK (MANDATORY FIRST STEP)
+
+**Before ANY implementation**, verify approval gates are passed:
+
+```bash
+# Detect feature/epic directory
+FEATURE_DIR=$(ls -td epics/[0-9]*-* 2>/dev/null | head -1)
+if [ -z "$FEATURE_DIR" ]; then
+  FEATURE_DIR=$(ls -td specs/[0-9]*-* 2>/dev/null | head -1)
+fi
+
+STATE_FILE="$FEATURE_DIR/state.yaml"
+
+# Check approvals
+PLANNING_APPROVED=$(yq '.approvals.planning // false' "$STATE_FILE" 2>/dev/null)
+TASKS_APPROVED=$(yq '.approvals.tasks // false' "$STATE_FILE" 2>/dev/null)
+
+if [ "$PLANNING_APPROVED" != "true" ] || [ "$TASKS_APPROVED" != "true" ]; then
+  echo "❌ APPROVAL REQUIRED"
+  echo ""
+  echo "Cannot proceed to implementation. Pending approvals:"
+  [ "$PLANNING_APPROVED" != "true" ] && echo "  - [ ] Planning → Run: /approve planning"
+  [ "$TASKS_APPROVED" != "true" ] && echo "  - [ ] Tasks → Run: /approve tasks"
+  echo ""
+  echo "Please review artifacts and run approval commands to continue."
+  exit 1
+fi
+
+echo "✅ Approval gates passed"
+echo "   - approvals.planning: $PLANNING_APPROVED"
+echo "   - approvals.tasks: $TASKS_APPROVED"
+```
+
+**If approvals are missing**:
+1. STOP immediately
+2. Output the blocked response template (shown above)
+3. Do NOT proceed with any task execution
+4. Do NOT generate any implementation code
+
+**Only proceed to the next section if BOTH approvals are `true`.**
+
+---
 
 ## Anti-Hallucination Rules
 

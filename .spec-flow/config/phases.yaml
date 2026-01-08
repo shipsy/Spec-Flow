@@ -17,6 +17,7 @@ models:
       - tasks
       - analyze
       - implement
+      - audit-implementation  # NEW: Drift detection
       - ship:optimize
       - ship:ship-staging
       - ship:validate-staging
@@ -28,7 +29,8 @@ models:
       plan: tasks
       tasks: analyze
       analyze: implement
-      implement: ship:optimize
+      implement: audit-implementation
+      audit-implementation: ship:optimize
       ship:optimize: ship:ship-staging
       ship:ship-staging: ship:validate-staging
       ship:validate-staging: ship:ship-prod
@@ -44,6 +46,7 @@ models:
       - tasks
       - analyze
       - implement
+      - audit-implementation  # NEW: Drift detection
       - ship:optimize
       - ship:deploy-prod
       - ship:finalize
@@ -53,7 +56,8 @@ models:
       plan: tasks
       tasks: analyze
       analyze: implement
-      implement: ship:optimize
+      implement: audit-implementation
+      audit-implementation: ship:optimize
       ship:optimize: ship:deploy-prod
       ship:deploy-prod: ship:finalize
       ship:finalize: ""
@@ -67,6 +71,7 @@ models:
       - tasks
       - analyze
       - implement
+      - audit-implementation  # NEW: Drift detection
       - ship:optimize
       - ship:build-local
       - ship:finalize
@@ -76,7 +81,8 @@ models:
       plan: tasks
       tasks: analyze
       analyze: implement
-      implement: ship:optimize
+      implement: audit-implementation
+      audit-implementation: ship:optimize
       ship:optimize: ship:build-local
       ship:build-local: ship:finalize
       ship:finalize: ""
@@ -87,18 +93,56 @@ epic:
     - contract-lock
     - sprint-execution
     - audit-workflow
+    - core-functions  # Document logical transformation blocks
+    - audit-implementation  # Drift detection - required for epics
   quality_gates:
     - e2e-tests
     - contract-validation
     - load-testing
     - migration-integrity
+    - implementation-drift  # NEW: Verify code matches spec/plan/tasks
+  required_artifacts:
+    - epic-spec.md
+    - plan.md
+    - core-functions.md  # Required for epics - documents what product DOES
+    - tasks.md
+    - implementation-audit-report.md  # NEW: Drift detection report
+  optional_artifacts:
+    - itds/*.md  # Important technical decisions
 
 # Manual gates that pause workflow for human approval
+# These gates BLOCK progression until user explicitly approves
 manual_gates:
   staging-prod:
+    - plan:approval          # Block after plan/core-functions/ITDs until approved
+    - tasks:approval         # Block after tasks.md until approved
     - ship:validate-staging
-  direct-prod: []
-  local-only: []
+  direct-prod:
+    - plan:approval          # Block after plan/core-functions/ITDs until approved
+    - tasks:approval         # Block after tasks.md until approved
+  local-only:
+    - plan:approval          # Block after plan/core-functions/ITDs until approved
+    - tasks:approval         # Block after tasks.md until approved
+
+# Approval gates configuration
+approval_gates:
+  plan:approval:
+    description: "Approval required for core-functions.md and ITDs before tasks"
+    required_artifacts:
+      - plan.md
+    optional_artifacts:
+      - core-functions.md
+      - itds/*.md
+    state_flag: "approvals.planning"
+    blocks_phase: "tasks"
+    approval_command: "/approve planning"
+  tasks:approval:
+    description: "Approval required for tasks.md before implementation"
+    required_artifacts:
+      - tasks.md
+    state_flag: "approvals.tasks"
+    blocks_phase: "implement"
+    approval_command: "/approve tasks"
 
 # Phase metadata
 phase_metadata:
@@ -111,6 +155,7 @@ phase_metadata:
   plan:
     command: "/plan"
     outputs: ["plan.md", "research.md"]
+    optional_outputs: ["craftsman-decision.md", "core-functions.md", "itds/*.md"]
   tasks:
     command: "/tasks"
     outputs: ["tasks.md"]
@@ -120,6 +165,12 @@ phase_metadata:
   implement:
     command: "/implement"
     outputs: ["task completions"]
+  audit-implementation:
+    command: "/audit-implementation"
+    outputs: ["implementation-audit-report.md"]
+    description: "Detect drift between implemented code and spec/plan/tasks"
+    required_for_epics: true
+    blocks_optimize_if_fail: true
   ship:optimize:
     command: "/optimize"
     outputs: ["optimization-report.md", "code-review-report.md"]
@@ -142,3 +193,14 @@ phase_metadata:
   ship:finalize:
     command: "/finalize"
     outputs: ["CHANGELOG update", "README update", "branch cleanup"]
+  # Approval gate phases (manual checkpoints)
+  plan:approval:
+    command: "/approve planning"
+    description: "Manual approval gate for planning artifacts (core-functions.md, ITDs)"
+    required_before: "tasks"
+    state_check: "approvals.planning == true"
+  tasks:approval:
+    command: "/approve tasks"
+    description: "Manual approval gate for tasks.md before implementation"
+    required_before: "implement"
+    state_check: "approvals.tasks == true"

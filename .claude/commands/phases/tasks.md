@@ -658,7 +658,17 @@ File: ${BASE_DIR}/${SLUG}/tasks.md
 - Phase 3+ (User Stories): Story-specific implementation
 - Phase N (Polish): Cross-cutting concerns
 
-📋 NEXT: /implement (auto-continues)
+════════════════════════════════════════════════════════════
+🛑 APPROVAL REQUIRED - WORKFLOW PAUSED
+════════════════════════════════════════════════════════════
+
+📋 NEXT STEPS:
+1. Review tasks.md above
+2. Run: /approve tasks
+3. Then: /implement
+
+⚠️ Do NOT run /implement until you have approved the tasks.
+════════════════════════════════════════════════════════════
 ```
 </process>
 
@@ -670,7 +680,8 @@ Before completing, verify:
 - UI-first: mockup tasks generated, checklist created for reference
 - E2E tests (epic only): ≥3 critical user journeys documented, E2E tasks added to tasks.md
 - Git commit successful with task summary
-- Auto-proceeding to /implement
+- **STOP HERE** - Do NOT auto-proceed to /implement
+- Present approval gate message to user
 </verification>
 
 <success_criteria>
@@ -704,7 +715,7 @@ Before completing, verify:
 - Tasks trace to plan.md/spec.md source lines
 - Dependencies verified (no circular dependencies)
 - Git commit created
-- User knows next action
+- **STOP at approval gate** - present approval message, do NOT auto-proceed to /implement
   </success_criteria>
 
 <mental_model>
@@ -721,17 +732,20 @@ Setup
     → Generate Per-Sprint Tasks
 {ELSE IF feature + --ui-first}
   → Generate Mockup Tasks
-    → Auto-proceed to /implement
 {ELSE}
   → Generate Traditional Tasks (20-30)
 {ENDIF}
   ↓
 Git Commit
   ↓
-Auto-proceed to /implement
+🛑 APPROVAL GATE (STOP HERE)
+  ↓
+User runs: /approve tasks
+  ↓
+Then: /implement
 ```
 
-**Auto-continues to /implement after task generation** (no manual gate).
+**APPROVAL GATE**: After task generation, STOP and wait for user to run `/approve tasks`. Do NOT auto-proceed to /implement.
 </mental_model>
 
 <anti_hallucination_rules>

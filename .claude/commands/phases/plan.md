@@ -100,6 +100,100 @@ Spawn isolated plan-phase-agent to generate implementation plan from spec.
 **Workflow position**: `spec → clarify → plan → tasks → implement → optimize → ship`
 </objective>
 
+<core_functions_detection>
+## Core Functions Detection (Epic Context)
+
+**After research and before generating plan.md, check for epic context:**
+
+```bash
+IS_EPIC=$([ -d "$(ls -td epics/[0-9]*-* 2>/dev/null | head -1)" ] && echo "true" || echo "false")
+```
+
+**If IS_EPIC is true:**
+
+1. Set flag for post-plan Core Functions generation
+2. Include note in plan.md:
+   ```markdown
+   ## Core Functions
+   
+   **Status**: Pending generation after plan phase
+   **Command**: /core-functions create
+   
+   Core Functions will document the logical transformations introduced by this epic.
+   This section will be populated after plan.md is complete.
+   ```
+
+3. After plan.md is generated, the orchestrator (/epic) will prompt for Core Functions via PHASE 4.5
+
+**If IS_EPIC is false (feature context):**
+
+Check if this is a new capability feature:
+```bash
+# Look for indicators of new capability
+NEW_CAPABILITY=$(grep -iE "new functionality|new feature|introduces|adds capability|new system" specs/*/spec.md 2>/dev/null | wc -l)
+```
+
+If NEW_CAPABILITY > 0, include suggestion in plan.md:
+```markdown
+## Core Functions (Optional)
+
+💡 **Tip**: This feature appears to add new capabilities.
+Consider documenting Core Functions to describe what the product DOES:
+
+```bash
+/core-functions "create: [feature description]"
+```
+
+Core Functions help stakeholders understand the product's logical transformations
+without technical implementation details.
+```
+
+</core_functions_detection>
+
+<itd_detection>
+## ITD Detection (Architectural Decision Points)
+
+**After research, detect ITD opportunities:**
+
+### Step ITD-1: Scan for Decision Points
+
+Search the spec.md and research findings for decision indicators:
+
+```bash
+# Keywords indicating architectural decisions
+grep -iE "(choose|select|decide|option|alternative|vs|versus|or we could|tradeoff)" specs/*/spec.md epics/*/epic-spec.md 2>/dev/null
+grep -iE "(database|framework|cache|queue|storage|architecture|pattern)" specs/*/spec.md epics/*/epic-spec.md 2>/dev/null
+```
+
+### Step ITD-2: Include ITD Placeholder in plan.md
+
+For epic context, include ITD section in plan.md:
+
+```markdown
+## ITDs (Important Technical Decisions)
+
+**Status**: Pending formal documentation
+**Command**: /itd create
+
+The following architectural decisions were identified during planning:
+
+| Decision Point | Options Considered | Recommendation |
+|----------------|-------------------|----------------|
+| [Decision 1] | [Options] | [Recommended] |
+| [Decision 2] | [Options] | [Recommended] |
+
+Formal ITD documentation will be created after plan.md is complete.
+```
+
+### Step ITD-3: Epic Orchestrator Handles ITD Creation
+
+After plan.md is generated, the `/epic` orchestrator (PHASE 4.5) will:
+1. Prompt user to create formal ITDs
+2. Invoke `/itd create` for each major decision
+3. Update epic-spec.md with ITD references
+
+</itd_detection>
+
 ## Legacy Context (for agent reference)
 
 <legacy_context>
@@ -558,8 +652,35 @@ Before completing, verify:
 - **Epic frontend blueprints generated** (if Frontend subsystem detected in epic-spec.md)
 - Constitution check passed (all 8 standards considered)
 - Git commit successful
-- Auto-proceeding to /tasks
+- **STOP HERE** - Do NOT auto-proceed to /tasks
 </verification>
+
+## ⚠️ APPROVAL GATE (MANDATORY STOP)
+
+After plan.md (and optionally core-functions.md, ITDs) are created:
+
+```
+════════════════════════════════════════════════════════════
+🛑 APPROVAL REQUIRED - WORKFLOW PAUSED
+════════════════════════════════════════════════════════════
+
+Planning artifacts have been created and require your review:
+
+📄 Created artifacts:
+- plan.md
+- core-functions.md (if epic)
+- itds/*.md (if technical decisions)
+
+📋 NEXT STEPS:
+1. Review the above artifacts
+2. Run: /approve planning
+3. Then: /tasks
+
+⚠️ Do NOT run /tasks until you have approved the planning artifacts.
+════════════════════════════════════════════════════════════
+```
+
+**CRITICAL**: The AI must STOP here and present this message. Do NOT auto-proceed to /tasks.
 
 <success_criteria>
 **Epic workflows**:
@@ -583,7 +704,7 @@ Before completing, verify:
 - Anti-hallucination rules followed (citations to existing code)
 - Constitution check passed or auto-remediated
 - Git commit created
-- Auto-proceeding to next phase
+- **STOP at approval gate** - present approval message, do NOT auto-proceed
 </success_criteria>
 
 <mental_model>
@@ -608,10 +729,14 @@ Phase 1: Design & Contracts
   ↓
 Git Commit (auto)
   ↓
-Auto-proceed to /tasks
+🛑 APPROVAL GATE (STOP HERE)
+  ↓
+User runs: /approve planning
+  ↓
+Then: /tasks
 ```
 
-**Autopilot behavior**: All phases execute automatically without manual confirmation. Only blocks on errors.
+**Approval gate behavior**: After plan creation, STOP and wait for user to run `/approve planning`. Do NOT auto-proceed.
 </mental_model>
 
 <anti_hallucination_rules>
