@@ -231,6 +231,159 @@ Handles:
 - Production promotion
 - Rollback capability
 
+## Planning Artifacts
+
+Spec-Flow generates structured planning artifacts that ensure implementation aligns with requirements.
+
+### ITDs (Important Technical Decisions)
+
+ITDs document architectural choices with significant impact—decisions that are hard to change later.
+
+```bash
+/itd "create: Database selection for analytics workload"
+```
+
+**Structure**:
+- **Problem**: Technical challenge (not a solution)
+- **Options Considered**: 2+ viable alternatives
+- **Reasoning**: Tradeoffs, cost analysis, why alternatives rejected
+- **References**: Links to docs, benchmarks, related decisions
+
+**When to create ITDs**:
+- Database, framework, or architecture pattern selection
+- Performance/security decisions with tradeoffs
+- Tool selection requiring cost analysis (free vs paid)
+- Best practices for repeated decisions
+
+**Location**: `specs/NNN-feature/itds/` or `epics/NNN-epic/itds/`
+
+### Core Functions
+
+Core Functions describe **what the product does** (not how it's built) in user-understandable language.
+
+```bash
+/core-functions "create: Agent execution and runtime management"
+```
+
+**Format**:
+
+```
+Input → [Core Function] → Output
+
+Non-Obvious Logic: What transformation happens that isn't obvious
+```
+
+**Example**:
+> **CF-01: Progress Calculation**
+> - Input: Student's completed flight lessons
+> - Output: Proficiency score mapped to FAA standards
+> - Non-obvious: Weights recent lessons more heavily, adjusts for weather
+
+**When to use**:
+- **Epics**: Required—automatically prompted during `/plan`
+- **Features**: Optional—recommended when adding new capabilities
+
+**Location**: `core-functions.md` in feature/epic directory
+
+## Approval Flow
+
+Spec-Flow enforces **mandatory approval gates** before implementation can begin.
+
+```
+/spec → /clarify → /plan → [APPROVAL] → /tasks → [APPROVAL] → /implement → /audit → /optimize → /ship
+```
+
+### Gate 1: Planning Approval
+
+After `/plan` completes:
+
+```bash
+/approve planning
+```
+
+- **Approves**: `plan.md`, `core-functions.md`, `itds/*.md`
+- **Unlocks**: `/tasks` command
+- **Blocked if**: `approvals.planning = false` in `state.yaml`
+
+### Gate 2: Tasks Approval
+
+After `/tasks` completes:
+
+```bash
+/approve tasks
+```
+
+- **Approves**: `tasks.md`
+- **Unlocks**: `/implement` command
+- **Blocked if**: `approvals.tasks = false` in `state.yaml`
+
+### Why Approval Gates?
+
+1. **Prevents premature implementation** before design review
+2. **Ensures validation** of core-functions, ITDs, and task breakdown
+3. **Creates explicit checkpoints** for human oversight
+4. **Reduces rework** from implementing wrong specifications
+
+## Implementation Drift Detection
+
+After implementation, `/audit-implementation` verifies that code matches spec, plan, and tasks.
+
+```bash
+/audit-implementation
+```
+
+### 6 Verification Passes
+
+| Pass | Name | What It Checks |
+|------|------|----------------|
+| 1 | Task Completion | Completed tasks have corresponding commits |
+| 2 | Requirement Traceability | Every FR-XXX has implementing code |
+| 3 | Architecture Compliance | Code structure matches plan.md |
+| 4 | Scope Creep | Changes not traced to requirements/tasks |
+| 5 | Core Functions | CF-XX functions are implemented |
+| 6 | ITD Compliance | Technical decisions were followed |
+
+### Audit Statuses
+
+| Status | Meaning | Next Step |
+|--------|---------|-----------|
+| `PASS` | Implementation aligns with spec/plan/tasks | Proceed to `/optimize` |
+| `NEEDS_REVIEW` | >3 major findings | Review and fix or accept |
+| `FAIL` | Critical issues found | Fix before proceeding |
+
+**Workflow position**: `implement → audit-implementation → optimize`
+
+## Cursor Integration
+
+Spec-Flow supports Cursor IDE alongside Claude Code. See [AGENTS.md](AGENTS.md) for multi-agent coordination.
+
+### Required Files
+
+| File | Purpose |
+|------|---------|
+| `.cursor/` | Cursor-specific prompts and adapters |
+| `.cursorrules` | Repo-level rules for Cursor |
+
+### Key Rules for Cursor
+
+1. **Shared canon** lives in `.spec-flow/` (repo map, domain guides, state schemas)
+2. **`.claude/` is read-only** for Cursor—use as reference only
+3. **Cursor-specific files** belong in `.cursor/`
+4. **Run one phase per session** unless explicitly chaining
+5. **Honor approval gates**—check `state.yaml` before implementation
+
+### Cursor Rules Template
+
+Add to `.cursorrules`:
+
+```
+# Spec-Flow Enforcement
+- Read .spec-flow/ENFORCE.md before any code modifications
+- Check approvals.planning and approvals.tasks in state.yaml
+- Follow TDD enforcement for implementation tasks
+- Reference .claude/commands/ for phase behavior patterns
+```
+
 ## Project Structure
 
 ```
