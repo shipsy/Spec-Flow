@@ -3,17 +3,11 @@
   <p><strong>Ship features faster with AI-powered spec-driven development.</strong></p>
 
   <p>
-    <a href="https://www.npmjs.com/package/spec-flow">
-      <img src="https://img.shields.io/npm/v/spec-flow.svg?logo=npm&color=CB3837" alt="npm package">
-    </a>
-    <a href="https://github.com/marcusgoll/Spec-Flow/blob/main/LICENSE">
+    <a href="https://github.com/shipsy/Spec-Flow/blob/main/LICENSE">
       <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT">
     </a>
-    <a href="https://github.com/marcusgoll/Spec-Flow/actions/workflows/ci.yml">
-      <img src="https://img.shields.io/github/actions/workflow/status/marcusgoll/Spec-Flow/ci.yml?branch=main" alt="CI Status">
-    </a>
-    <a href="https://github.com/marcusgoll/Spec-Flow/stargazers">
-      <img src="https://img.shields.io/github/stars/marcusgoll/Spec-Flow?style=social" alt="GitHub Stars">
+    <a href="https://github.com/shipsy/Spec-Flow/stargazers">
+      <img src="https://img.shields.io/github/stars/shipsy/Spec-Flow?style=social" alt="GitHub Stars">
     </a>
   </p>
 </div>
@@ -40,13 +34,24 @@ That's it. Spec-Flow handles the rest: writing specs, planning architecture, bre
 
 ## Quick Start
 
-### 1. Install
+### 1. Install as Git Submodule
 
 ```bash
-npx spec-flow init
+# Add Spec-Flow as a submodule in your project root
+git submodule add https://github.com/shipsy/Spec-Flow.git .spec-flow-src
+
+# Copy workflow files into your project
+cp -r .spec-flow-src/.claude .
+cp -r .spec-flow-src/.spec-flow .
+cp .spec-flow-src/CLAUDE.md .
+cp .spec-flow-src/AGENTS.md .
+
+# Commit the submodule and copied files
+git add .gitmodules .spec-flow-src .claude .spec-flow CLAUDE.md AGENTS.md
+git commit -m "chore: add Spec-Flow workflow"
 ```
 
-This copies workflow files directly into your project (`.claude/`, `.spec-flow/`, `CLAUDE.md`). No dependency is added to your `package.json` — Spec-Flow becomes part of your codebase.
+This keeps Spec-Flow as a tracked submodule, making updates easy while the workflow files become part of your codebase.
 
 ### 2. Build your first feature
 
@@ -68,22 +73,31 @@ Your feature is deployed. All decisions documented. Tests passing. Ready for the
 
 ### Staying Updated
 
-Check for updates anytime:
+Pull the latest Spec-Flow changes:
 
 ```bash
-npx spec-flow status
+# Update the submodule
+cd .spec-flow-src
+git pull origin main
+cd ..
+
+# Re-copy updated files (backup your customizations first)
+cp -r .spec-flow-src/.claude .
+cp -r .spec-flow-src/.spec-flow .
+
+git add .claude .spec-flow
+git commit -m "chore: update Spec-Flow to latest"
 ```
 
-Update to the latest version:
+### Cloning a Project with Spec-Flow
+
+When cloning a project that uses Spec-Flow as a submodule:
 
 ```bash
-npx spec-flow update
-```
+git clone --recurse-submodules <your-project-url>
 
-For CI/CD pipelines, use `--check` to fail if outdated:
-
-```bash
-npx spec-flow status --check
+# Or if already cloned:
+git submodule update --init --recursive
 ```
 
 ---
@@ -644,10 +658,10 @@ MIT License - see [LICENSE](LICENSE) for details.
 ---
 
 <div align="center">
-  <p>Built by <a href="https://x.com/marcusgoll">@marcusgoll</a></p>
+  <p>Originally built by <a href="https://x.com/marcusgoll">@marcusgoll</a> · Fork maintained by <a href="https://github.com/shipsy">@shipsy</a></p>
   <p>
-    <a href="https://github.com/marcusgoll/Spec-Flow/issues">Report a bug</a> ·
-    <a href="https://github.com/marcusgoll/Spec-Flow/discussions">Ask a question</a> ·
-    <a href="https://github.com/marcusgoll/Spec-Flow/stargazers">Star on GitHub</a>
+    <a href="https://github.com/shipsy/Spec-Flow/issues">Report a bug</a> ·
+    <a href="https://github.com/shipsy/Spec-Flow/discussions">Ask a question</a> ·
+    <a href="https://github.com/shipsy/Spec-Flow/stargazers">Star on GitHub</a>
   </p>
 </div>
