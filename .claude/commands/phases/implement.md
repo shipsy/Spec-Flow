@@ -878,17 +878,11 @@ git commit -m "docs: update feature CLAUDE.md with implementation progress"
 
 ### Step 4: Run Full Test Suite
 
-**Execute test suite:**
+**Execute test suite using centralized /test command:**
 
 ```bash
-# Backend tests
-cd api && pytest
-
-# Frontend tests
-cd apps/app && pnpm test
-
-# Integration tests
-pnpm test:e2e
+# Run all tests using centralized /test command
+/test
 ```
 
 **Verify:**
@@ -1036,8 +1030,8 @@ Resolution:
 2. **Check test suite status**:
 
    ```bash
-   # Run full test suite
-   pnpm test && pytest
+   # Run full test suite using centralized /test command
+   /test
    ```
 
    Should show 100% passing

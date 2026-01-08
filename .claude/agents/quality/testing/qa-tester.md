@@ -114,18 +114,14 @@ test("user registration with valid credentials", async () => {
   </step>
 
 <step number="4" name="run_and_verify">
-Execute tests and validate results:
+Execute tests and validate results using centralized /test command:
 
 ```bash
-# Python
-pytest -v --cov=src --cov-report=term-missing --cov-report=html
+# Run tests with coverage validation
+/test --coverage
 
-# JavaScript
-npm run test:coverage
-
-# E2E
-npx playwright test
-npx cypress run
+# For E2E tests specifically
+/test --type=e2e
 ```
 
 **Verify**:
@@ -184,6 +180,155 @@ Update task status atomically via task-tracker:
 **Critical**: NEVER manually edit tasks.md or NOTES.md - task-tracker.sh atomically updates both files
 </step>
 </workflow>
+
+<test_case_categories>
+**Test Case Categories Reference**:
+
+**1. Positive Scenarios (Happy Path)**:
+- **Purpose**: Verify expected behavior with valid inputs
+- **When to use**: Every requirement needs at least 1 positive test
+- **Examples**:
+  - User registration with valid email and password → 201 Created
+  - Message creation with valid content → Message saved to DB
+  - List API returns filtered results → 200 OK with filtered data
+- **Test case limits**: 1-2 per requirement
+
+**2. Negative Scenarios (Error Handling)**:
+- **Purpose**: Verify error handling for invalid inputs and failure cases
+- **When to use**: Critical errors must be tested (authentication failures, validation errors, network timeouts)
+- **Examples**:
+  - User registration with invalid email → 400 Bad Request
+  - Message creation with content >4000 chars → 400 Bad Request
+  - List API with invalid filter parameter → 400 Bad Request
+- **Test case limits**: 1-2 per requirement (critical errors only)
+
+**3. Boundary Scenarios**:
+- **Purpose**: Verify edge cases at boundaries (min, max, empty, null)
+- **When to use**: When requirements specify limits or constraints
+- **Examples**:
+  - Content = 4000 chars (max boundary) → Saves successfully
+  - Content = 4001 chars (exceeds boundary) → Raises ValidationError
+  - Empty string input → Appropriate error handling
+- **Test case limits**: 1 per boundary condition
+
+**4. Security Scenarios**:
+- **Purpose**: Verify security measures (input sanitization, authorization, injection prevention)
+- **When to use**: For all user-facing features, API endpoints, data inputs
+- **Examples**:
+  - SQL injection attempt in search field → Input sanitized, no SQL executed
+  - XSS attempt in content field → Content escaped in output
+  - Unauthorized access attempt → 401/403 response
+- **Test case limits**: 1-2 per security-sensitive requirement
+
+**5. Performance Scenarios**:
+- **Purpose**: Verify performance requirements (response time, load capacity)
+- **When to use**: When NFRs specify performance targets
+- **Examples**:
+  - API response time <500ms p95 → Measured and verified
+  - Load test with N concurrent users → System handles load
+- **Test case limits**: 1 per performance requirement
+
+**6. List API Scenarios** (REQUIRED for list endpoints):
+- **Purpose**: Verify list/collection endpoints work correctly with filtering, pagination, sorting
+- **When to use**: For ANY endpoint returning a list/collection
+- **Required scenarios**:
+  - Filter by single field → Returns filtered results
+  - Filter by multiple fields → Returns combined filter results
+  - Pagination - first page → Returns first N items
+  - Pagination - middle page → Returns items N to M
+  - Pagination - last page → Returns remaining items
+  - Pagination - invalid page (0, negative, too-large) → Error handling
+  - Sorting - ascending → Results sorted ascending
+  - Sorting - descending → Results sorted descending
+  - Sorting - multiple fields → Results sorted by multiple criteria
+  - Sorting - invalid field → Error handling
+  - Empty result set → Returns empty array with proper structure
+  - Filter with special characters → Input sanitized (SQL injection, XSS prevention)
+  - Default values → Behavior when pagination/sorting not provided
+- **Test case limits**: 11-13 test cases (all P1 list scenarios required)
+
+**Test Case Prioritization**:
+- **P1 (Must test)**: Happy path, critical errors, security, boundaries, list API scenarios
+- **P2 (Should test)**: Secondary flows, edge cases - only if time budget allows
+- **P3 (Nice to have)**: Exotic edge cases - skip unless critical
+
+**Test Case Limits** (to prevent explosion):
+- Simple requirement (single function): Max 3-5 test cases
+- Complex requirement (multi-step flow): Max 5-8 test cases
+- List API requirement: 11-13 test cases (all P1 list scenarios required)
+- Critical requirement (security/data integrity): Max 8-10 test cases
+</test_case_categories>
+
+<budget_overrun_handling>
+**Time Budget Overrun Handling**:
+
+If estimated test execution time exceeds budget:
+1. **STOP** test creation/execution
+2. Calculate total estimated time vs budget:
+   - Unit tests: target <5s total
+   - Integration tests: target <30s total
+   - E2E tests: target <2min total
+3. **PROMPT** user with two options:
+   - **Option 1: Increase budget**: User specifies new budget values
+   - **Option 2: Select tests to skip**: User selects which test cases to remove from list
+4. **DO NOT** proceed until user makes explicit decision
+5. **DO NOT** automatically skip P2/P3 tests
+6. Update test plan based on user decision
+
+**Example Prompt**:
+```
+Test execution time exceeds budget:
+- Estimated: 45s (Unit: 3s, Integration: 35s, E2E: 7s)
+- Budget: 30s (Unit: <5s, Integration: <30s, E2E: <2min)
+- Overrun: 15s (Integration tests)
+
+Would you like to:
+[1] Increase integration test budget to: ___ seconds
+[2] Select tests to skip (see list below)
+
+Integration Tests (35s total, budget: 30s):
+[ ] TC-001: User registration (2s) [P1]
+[ ] TC-002: Invalid email (1.5s) [P1]
+[ ] TC-003: Filter users (3s) [P1]
+[ ] TC-004: Pagination (4s) [P1]
+[ ] TC-005: Sorting (2.5s) [P1]
+[ ] TC-006: Empty results (1s) [P1]
+[ ] TC-007: Multiple filters (5s) [P2]
+[ ] TC-008: Invalid sort field (1.5s) [P2]
+...
+```
+
+**Critical**: Never proceed without explicit user decision. Never automatically reduce tests.
+</budget_overrun_handling>
+
+<list_api_checklist>
+**List API Requirements Checklist**:
+
+For any endpoint returning a list/collection, ensure ALL of the following are tested:
+
+**Filtering**:
+- [ ] Single field filter → Returns filtered results
+- [ ] Multiple field filters → Returns combined filter results
+- [ ] Filter with special characters → Input sanitized (SQL injection, XSS prevention)
+
+**Pagination**:
+- [ ] First page (page=1, limit=N) → Returns first N items
+- [ ] Middle page (page=N, limit=M) → Returns items N to M
+- [ ] Last page (page=last, limit=M) → Returns remaining items
+- [ ] Invalid page (page=0, page=-1, page=too-large) → Error handling (400 Bad Request)
+
+**Sorting**:
+- [ ] Ascending (sort=field:asc) → Results sorted ascending
+- [ ] Descending (sort=field:desc) → Results sorted descending
+- [ ] Multiple fields (sort=field1:asc,field2:desc) → Results sorted by multiple criteria
+- [ ] Invalid field (sort=invalid-field) → Error handling (400 Bad Request)
+
+**Edge Cases**:
+- [ ] Empty result set → Returns empty array with proper structure (not null, not error)
+- [ ] Default values → Behavior when pagination/sorting not provided (defaults applied)
+
+**All scenarios above are P1 (Must test)** for list endpoints.
+</list_api_checklist>
 
 <constraints>
 - MUST trace every test back to requirements in spec.md or tasks.md

@@ -9,6 +9,7 @@
 #   4. Scope Creep Detection
 #   5. Core Functions Verification (if exists)
 #   6. ITD Compliance (if exists)
+#   7. Test Coverage Validation
 
 set -euo pipefail
 
@@ -374,6 +375,83 @@ if [ "$MODE" != "--quick" ] && [ -d "$ITD_DIR" ]; then
 fi
 
 # ============================================================================
+# PASS 7: Test Coverage Validation
+# ============================================================================
+if [ "$MODE" != "--quick" ]; then
+    echo "=== Pass 7: Test Coverage Validation ==="
+    
+    log_info "Checking test coverage..."
+    
+    # Check if spec.md has test scenarios section
+    SCENARIO_COUNT=0
+    TEST_FILE_COUNT=0
+    LIST_SCENARIOS=0
+    MISSING_CATEGORIES=()
+    
+    if grep -q "## 3.5) Test Scenarios\|## Test Scenarios" "$SPEC_FILE" 2>/dev/null; then
+        log_success "Test scenarios section found in spec.md"
+        
+        # Count test scenarios from spec
+        SCENARIO_COUNT=$(grep -c "SC-POS-\|SC-NEG-\|SC-BND-\|SC-SEC-\|SC-PERF-\|SC-LIST-" "$SPEC_FILE" 2>/dev/null || echo "0")
+        log_info "Test scenarios defined in spec: $SCENARIO_COUNT"
+        
+        # Check for test files
+        TEST_DIRS=("tests" "test" "__tests__" "spec" "specs")
+        TEST_FILES=()
+        
+        for dir in "${TEST_DIRS[@]}"; do
+            if [ -d "$dir" ]; then
+                while IFS= read -r -d '' file; do
+                    TEST_FILES+=("$file")
+                done < <(find "$dir" -type f \( -name "*.test.*" -o -name "*.spec.*" -o -name "test_*.py" -o -name "*_test.py" -o -name "*.test.js" -o -name "*.test.ts" \) -print0 2>/dev/null)
+            fi
+        done
+        
+        TEST_FILE_COUNT=${#TEST_FILES[@]}
+        
+        if [ "$TEST_FILE_COUNT" -eq 0 ]; then
+            add_finding "MAJOR" "7" "No test files found. Tests should be created during TDD phase."
+        else
+            log_success "Found $TEST_FILE_COUNT test file(s)"
+        fi
+        
+        # Check for list API test scenarios if list endpoints exist
+        if grep -qi "list\|collection\|array\|\[\]" "$SPEC_FILE" 2>/dev/null; then
+            LIST_SCENARIOS=$(grep -c "SC-LIST-" "$SPEC_FILE" 2>/dev/null || echo "0")
+            if [ "$LIST_SCENARIOS" -eq 0 ]; then
+                add_finding "MAJOR" "7" "List endpoint detected but no list API test scenarios (SC-LIST-*) found in spec.md"
+            else
+                log_success "List API test scenarios found: $LIST_SCENARIOS"
+            fi
+        fi
+        
+        # Check test coverage categories
+        COVERAGE_CATEGORIES=("Positive" "Negative" "Boundary" "Security")
+        
+        for category in "${COVERAGE_CATEGORIES[@]}"; do
+            if ! grep -qi "SC-.*-.*$category\|$category.*scenario" "$SPEC_FILE" 2>/dev/null; then
+                MISSING_CATEGORIES+=("$category")
+            fi
+        done
+        
+        if [ ${#MISSING_CATEGORIES[@]} -gt 0 ]; then
+            add_finding "MINOR" "7" "Missing test categories in spec: ${MISSING_CATEGORIES[*]}"
+        fi
+        
+        # Check requirements traceability (each FR should have tests)
+        if [ "$REQ_COUNT" -gt 0 ] && [ "$TEST_FILE_COUNT" -eq 0 ]; then
+            add_finding "CRITICAL" "7" "Requirements defined (FR-*) but no test files found. Each requirement should have at least 1 positive + 1 negative test."
+        fi
+        
+        log_success "Test coverage validation complete"
+    else
+        log_warning "Test scenarios section not found in spec.md (section 3.5). Consider adding test scenarios for comprehensive test planning."
+    fi
+    
+    echo ""
+fi
+
+# ============================================================================
 # Generate Report
 # ============================================================================
 echo "=== Generating Report ==="
@@ -482,6 +560,21 @@ if [ -d "$ITD_DIR" ]; then
     echo "" >> "$REPORT_FILE"
     echo "### Pass 6: ITD Compliance" >> "$REPORT_FILE"
     echo "- ITDs Documented: $ITD_COUNT" >> "$REPORT_FILE"
+fi
+
+if [ "$MODE" != "--quick" ]; then
+    echo "" >> "$REPORT_FILE"
+    echo "### Pass 7: Test Coverage Validation" >> "$REPORT_FILE"
+    echo "- Test Scenarios in Spec: ${SCENARIO_COUNT:-0}" >> "$REPORT_FILE"
+    echo "- Test Files Found: ${TEST_FILE_COUNT:-0}" >> "$REPORT_FILE"
+    if [ -n "${LIST_SCENARIOS:-}" ]; then
+        echo "- List API Scenarios: $LIST_SCENARIOS" >> "$REPORT_FILE"
+    fi
+    if [ ${#MISSING_CATEGORIES[@]} -gt 0 ]; then
+        echo "- Missing Categories: ${MISSING_CATEGORIES[*]}" >> "$REPORT_FILE"
+    fi
+    echo "" >> "$REPORT_FILE"
+    echo "**Budget Overrun Handling**: If test execution time exceeds budget, see qa-tester.md for user prompt workflow." >> "$REPORT_FILE"
 fi
 
 cat >> "$REPORT_FILE" << EOF

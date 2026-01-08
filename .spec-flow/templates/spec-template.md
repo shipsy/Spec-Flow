@@ -48,6 +48,60 @@
 - [Boundary condition] → expected handling
 - [Error scenario] → user-facing behavior
 
+### Test Scenarios (for Test Planning)
+
+> **Purpose**: Define test scenarios that will guide test case generation in /tasks phase
+> **Principle**: Focus on high-risk scenarios. Avoid test explosion by prioritizing.
+
+#### Positive Scenarios (Happy Path)
+- [P1] **SC-POS-001**: [Primary success scenario] → Verifies FR-XXX
+- [P2] **SC-POS-002**: [Secondary success scenario] → Verifies FR-YYY
+
+#### Negative Scenarios (Error Handling)
+- [P1] **SC-NEG-001**: [Invalid input] → Verifies error handling for FR-XXX
+- [P1] **SC-NEG-002**: [Authentication failure] → Verifies security for FR-YYY
+- [P2] **SC-NEG-003**: [Network timeout] → Verifies resilience
+
+#### Boundary Scenarios
+- [P1] **SC-BND-001**: [Min value] → Verifies FR-XXX boundary
+- [P1] **SC-BND-002**: [Max value] → Verifies FR-XXX boundary
+- [P2] **SC-BND-003**: [Empty/null input] → Verifies edge case
+
+#### Security Scenarios (if applicable)
+- [P1] **SC-SEC-001**: [SQL injection attempt] → Verifies input sanitization
+- [P1] **SC-SEC-002**: [XSS attempt] → Verifies output encoding
+- [P1] **SC-SEC-003**: [Unauthorized access] → Verifies authorization
+
+#### Performance Scenarios (if applicable)
+- [P1] **SC-PERF-001**: [Load test: N concurrent users] → Verifies NFR-XXX
+- [P2] **SC-PERF-002**: [Response time: <500ms p95] → Verifies NFR-YYY
+
+#### List API Scenarios (REQUIRED for list endpoints)
+> **Note**: For any API endpoint that returns a list/collection, the following scenarios MUST be tested:
+- [P1] **SC-LIST-001**: Filter by single field → Verifies filtering functionality
+- [P1] **SC-LIST-002**: Filter by multiple fields → Verifies combined filters
+- [P1] **SC-LIST-003**: Pagination - first page → Verifies pagination (page=1, limit=N)
+- [P1] **SC-LIST-004**: Pagination - middle page → Verifies pagination (page=N, limit=M)
+- [P1] **SC-LIST-005**: Pagination - last page → Verifies pagination (page=last, limit=M)
+- [P1] **SC-LIST-006**: Pagination - invalid page → Verifies error handling (page=0, page=-1, page=too-large)
+- [P1] **SC-LIST-007**: Sorting - ascending → Verifies sort=field:asc
+- [P1] **SC-LIST-008**: Sorting - descending → Verifies sort=field:desc
+- [P1] **SC-LIST-009**: Sorting - multiple fields → Verifies sort=field1:asc,field2:desc
+- [P1] **SC-LIST-010**: Sorting - invalid field → Verifies error handling (sort=invalid-field)
+- [P1] **SC-LIST-011**: Empty result set → Verifies empty list response (no results match filters)
+- [P2] **SC-LIST-012**: Filter with special characters → Verifies filter sanitization (SQL injection, XSS)
+- [P2] **SC-LIST-013**: Pagination - default values → Verifies default page/limit when not provided
+
+**Test Execution Budget** (targets, not hard limits):
+- Unit tests: <5s total
+- Integration tests: <30s total
+- E2E tests: <2min total
+- **Total test suite**: <3min (target for CI)
+
+**Note**: If estimated time exceeds budget, user will be prompted (see qa-tester.md for workflow).
+
+**Coverage Target**: 80% minimum, 90% for critical paths
+
 ---
 
 ## 4) User Stories (Prioritized)

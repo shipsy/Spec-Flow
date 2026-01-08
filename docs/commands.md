@@ -58,6 +58,7 @@ Individual workflow phases - can be run standalone or via `/feature` orchestrati
 | `/tasks [--ui-first]` | Generate TDD task breakdown from plan.md with test-first sequencing and mockup-first mode (--ui-first) |
 | `/validate [feature-slug] [--quick\|--constitution]` | Analyze spec, plan, and tasks for consistency violations, breaking changes, and constitution compliance. Generates analysis-report.md with CRITICAL/MAJOR/MINOR findings. |
 | `/implement [feature-slug]` | Execute all implementation tasks from tasks.md with test-driven development, parallel batching, and atomic commits |
+| `/test [feature-slug] [--type=unit\|integration\|e2e\|all] [--coverage] [--watch]` | Run test suite with optional filtering by type. Defaults to all tests. Supports coverage validation and watch mode for TDD. |
 | `/optimize [feature-slug or empty for auto-detection]` | Run parallel quality gates (performance, security, accessibility, code review, migrations, Docker) and block deployment on failures |
 | `/debug [feature-slug] [options]` | Execute systematic debugging workflow via spec-cli.py, track failures in error-log.md, and generate session reports |
 | `/finalize` | Finalize documentation (CHANGELOG, README, help docs), update GitHub milestones/releases, and cleanup branches after production deployment |
@@ -82,6 +83,12 @@ Individual workflow phases - can be run standalone or via `/feature` orchestrati
 
 # Implement
 /implement
+
+# Run tests (quick feedback during development)
+/test --type=unit
+
+# Run all tests (before commit)
+/test
 
 # Run quality gates
 /optimize

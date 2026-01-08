@@ -93,8 +93,8 @@ Check for these indicators and use the corresponding test command:
 
 ## Test Execution
 
-1. Detect framework using indicators above
-2. Run test command
+1. Use centralized /test command for test execution
+2. Run: `/test` (or `/test --type=unit` for unit tests only)
 3. Capture output (pass/fail/skip status)
 4. If tests fail, return `---NEEDS_INPUT---` with options
 </test_framework_detection>

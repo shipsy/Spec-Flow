@@ -151,13 +151,57 @@ Scanned: api/src/**/*.py, frontend/**/*.tsx
 
 ## Phase 3.2: Tests - TDD (MUST FAIL before implementation)
 
+**Test Case Structure**: For each requirement, write tests in this order:
+1. **Positive (Happy Path)**: 1-2 tests per requirement
+2. **Negative (Error Cases)**: 1-2 tests per requirement (critical errors only)
+3. **Boundary**: 1 test per boundary condition
+4. **Security**: 1-2 tests per security-sensitive requirement
+5. **Performance**: 1 test per performance requirement (if applicable)
+6. **List API (if applicable)**: REQUIRED for list endpoints - see List API Test Scenarios below
+
+**List API Test Scenarios** (REQUIRED for any endpoint returning a list/collection):
+- Filter: Single field, multiple fields, special characters
+- Pagination: First page, middle page, last page, invalid page (0, negative, too-large)
+- Sorting: Ascending, descending, multiple fields, invalid field
+- Empty results: No matches for filters
+- Default values: Behavior when pagination/sorting not provided
+
+**Test Case Limits** (to prevent explosion):
+- Simple requirement (single function): Max 3-5 test cases
+- Complex requirement (multi-step flow): Max 5-8 test cases
+- List API requirement: 11-13 test cases (all P1 list scenarios required)
+- Critical requirement (security/data integrity): Max 8-10 test cases
+
+**Test Execution Time Targets**:
+- Unit test: <100ms each (target: <50ms)
+- Integration test: <2s each (target: <1s)
+- E2E test: <30s each (target: <15s)
+
+**Time Budget Overrun Handling**:
+- Calculate total estimated execution time for all test cases
+- If total exceeds budget (<5s unit, <30s integration, <2min e2e):
+  1. **STOP** test creation
+  2. **PROMPT** user with:
+     - Current estimated time vs budget
+     - List of all test cases with estimated times
+     - Option 1: Increase budget (user specifies new values)
+     - Option 2: Select test cases to skip (user selects from list)
+  3. **DO NOT** proceed until user makes explicit decision
+  4. **DO NOT** automatically skip P2/P3 tests
+
+**Traceability**: Link each test task to spec.md test scenarios (SC-POS-001, SC-NEG-001, etc.)
+
 **CONCRETE EXAMPLES:**
 
 - [ ] T010 [P] Contract test POST /api/chat/messages in `tests/contract/test_messages_post.py`
-      Request: {channel_id: str, content: str}
-      Response: {id: UUID, channel_id: str, user_id: str, content: str, created_at: datetime}
-      Status: 201 Created
-      Auth: Requires valid JWT token
+      **Test Cases** (max 5):
+      - [P1] SC-POS-001: Valid message creation → 201 Created, message saved
+      - [P1] SC-NEG-001: Invalid content (>4000 chars) → 400 Bad Request
+      - [P1] SC-NEG-002: Missing channel_id → 400 Bad Request
+      - [P1] SC-SEC-001: XSS in content → Content sanitized/escaped
+      - [P2] SC-BND-001: Empty content → 400 Bad Request
+      **Time Budget**: <2s total
+      **Traceability**: Verifies FR-001, covers SC-POS-001, SC-NEG-001, SC-NEG-002, SC-SEC-001
       REUSE: api/tests/contract/test_auth.py (JWT test patterns)
       Must FAIL (no implementation yet)
 
@@ -166,9 +210,14 @@ Scanned: api/src/**/*.py, frontend/**/*.tsx
       Test: Connect with valid token → receive welcome event
       Must FAIL (no implementation yet)
 
-- [ ] T012 [P] Message creation test in `api/tests/unit/test_message_model.py`
-      Test: Create message with valid data → saves to DB
-      Test: Create with invalid content (>4000 chars) → raises ValidationError
+- [ ] T012 [P] Message model validation test in `api/tests/unit/test_message_model.py`
+      **Test Cases** (max 4):
+      - [P1] SC-POS-001: Create message with valid data → Saves to DB
+      - [P1] SC-NEG-001: Content >4000 chars → Raises ValidationError
+      - [P1] SC-BND-001: Content = 4000 chars (boundary) → Saves successfully
+      - [P1] SC-BND-002: Content = 4001 chars (boundary) → Raises ValidationError
+      **Time Budget**: <500ms total
+      **Traceability**: Verifies FR-001, covers SC-POS-001, SC-NEG-001, SC-BND-001, SC-BND-002
       Must FAIL initially
 
 ---

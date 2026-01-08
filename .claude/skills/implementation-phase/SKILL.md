@@ -98,12 +98,54 @@ Benefits:
 See resources/tdd-workflow.md#test-architect for detailed usage.
 </step>
 
+<step number="3.5">
+**Check for Existing Tests (Test Reuse Detection)**
+
+Before writing new tests, check if similar tests already exist:
+
+```bash
+# Search for tests covering same requirements/scenarios
+grep -r "test.*user.*registration" tests/
+grep -r "SC-POS-001\|FR-001" tests/
+
+# Search for tests with similar names
+grep -r "test.*login\|test.*auth" tests/
+
+# Check test files for same feature/component
+find tests/ -name "*auth*" -o -name "*user*"
+```
+
+**Reuse Decision Rules**:
+- **Similarity >90%**: REUSE existing test, don't create duplicate
+  - Same requirement (FR-XXX)
+  - Same scenario (SC-POS-001)
+  - Same test purpose
+- **Similarity 70-90%**: Review if consolidation possible
+  - Overlapping requirements
+  - Similar scenarios
+  - Consider extracting shared test utilities
+- **Similarity <70%**: Proceed with new test
+  - Different requirements
+  - Different scenarios
+  - Different test purpose
+
+**If existing test found**:
+- Review existing test coverage
+- Extend existing test if it covers the same requirement
+- Don't create duplicate test
+
+**If no existing test found**:
+- Proceed with writing new test following TDD
+</step>
+
 <step number="4">
 **Execute Tasks Using TDD**
 
 For each task, follow RED → GREEN → REFACTOR cycle:
 
 **RED (Write Failing Test)**:
+
+**Before writing test**: Ensure you've checked for existing tests (step 3.5).
 
 ```python
 def test_user_can_login_with_valid_credentials():
@@ -187,18 +229,14 @@ See resources/anti-duplication-checks.md for search patterns.
 <step number="7">
 **Continuous Testing**
 
-After completing task triplet (3 tasks), run full test suite:
+After completing task triplet (3 tasks), run full test suite using centralized /test command:
 
 ```bash
 # Run all tests
-npm test  # or pytest, cargo test, etc.
+/test
 
-# Run type checker (TypeScript/Python)
-npm run type-check
-
-# Check coverage
-npm run test:coverage
-# Target: ≥80% coverage
+# Run with coverage
+/test --coverage
 ```
 
 Fix failing tests immediately (don't accumulate test debt).

@@ -170,6 +170,7 @@ For small changes that don't need the full workflow:
 | `/plan` | Create implementation plan |
 | `/tasks` | Break down into TDD tasks |
 | `/implement` | Execute tasks |
+| `/test [--type=unit\|integration\|e2e\|all] [--coverage] [--watch]` | Run test suite with optional filtering |
 | `/audit-implementation` | Detect drift between spec and code |
 | `/optimize` | Run quality gates |
 | `/ship` | Deploy to staging/production |
@@ -292,6 +293,28 @@ Executes tasks with:
 - Specialist agents (backend, frontend, database)
 - Parallel batch execution
 - Automatic error recovery
+
+### 7.5. Test Execution (Optional)
+
+```bash
+# Quick feedback during development
+/test --type=unit
+
+# Run all tests before commit
+/test
+
+# With coverage validation
+/test --coverage
+```
+
+Runs test suite with:
+
+- Optional filtering by type (unit/integration/e2e)
+- Coverage validation against spec.md scenarios
+- Watch mode for TDD workflow
+- Fast feedback for development cycles
+
+**Note**: For comprehensive test coverage validation including drift detection, use `/audit-implementation` instead.
 
 ### 8. Implementation Audit
 

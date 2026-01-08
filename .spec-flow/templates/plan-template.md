@@ -136,6 +136,47 @@ Existing code to reuse: [from codebase scan]
 - Rate limiting rules
 - Data encryption (at rest/in transit)
 
+### [TEST STRATEGY]
+
+**Test Types by Component**:
+- **Models/Entities**: Unit tests (fast, isolated)
+- **Services/Business Logic**: Unit + Integration tests (with DB mocks)
+- **API Endpoints**: Integration tests (contract tests)
+- **Critical User Flows**: E2E tests (Playwright/Cypress)
+
+**Coverage Targets**:
+- Unit tests: 80% minimum (90% for business logic)
+- Integration tests: All API contracts, critical data flows
+- E2E tests: P1 user journeys only (max 3-5 journeys)
+
+**Test Execution Budget** (targets):
+- Unit tests: <5s (run on every commit)
+- Integration tests: <30s (run on PR)
+- E2E tests: <2min (run on PR, nightly full suite)
+
+**Test Case Prioritization**:
+- P1: Must test (happy path, critical errors, security, boundaries, list API scenarios)
+- P2: Should test (secondary flows, edge cases) - only if time budget allows
+- P3: Nice to have (exotic edge cases) - skip unless critical
+
+**List API Testing Requirements**:
+- For any endpoint returning a list/collection, MUST test:
+  - Filtering (single field, multiple fields, special characters)
+  - Pagination (first, middle, last page, invalid pages)
+  - Sorting (ascending, descending, multiple fields, invalid fields)
+  - Empty results handling
+  - Default values when parameters not provided
+
+**Budget Overrun Handling**: See qa-tester.md for user prompt workflow.
+
+**Anti-Patterns to Avoid**:
+- ❌ Testing every permutation (test explosion)
+- ❌ Writing tests after implementation (TDD required)
+- ❌ E2E tests for every feature (only critical journeys)
+- ❌ Slow tests (>5s unit, >30s integration, >2min e2e)
+- ❌ Skipping list API scenarios (filter, pagination, sorting)
+- ❌ Automatically reducing tests when budget exceeded (must prompt user)
+
 ### Artifacts Generated
 
 1. **data-model.md**: Entities, fields (referencing REUSE from existing models), relationships, validation rules

@@ -18,7 +18,47 @@ Your mission: Execute Phase 0.5 (Clarification) in an isolated context window wh
 - Integration points (unclear API contracts, third-party dependencies, or service boundaries)
 - Edge cases and error scenarios (unhandled conditions, failure modes, recovery paths)
 - Success criteria vagueness (measurable outcomes undefined, acceptance criteria unclear)
+- Test scenario clarifications (critical failure modes, security concerns, performance requirements, list API requirements)
 </focus_areas>
+
+<test_scenario_clarifications>
+**Test Scenario Clarifications**:
+
+When clarifying requirements, also ask about test scenarios to ensure comprehensive test planning:
+
+**Critical Failure Modes**:
+- What errors must be handled gracefully?
+- What are the expected error responses?
+- How should the system recover from failures?
+
+**Security Concerns**:
+- What attack vectors should be tested?
+- Are there any sensitive data handling requirements?
+- What authentication/authorization checks are needed?
+
+**Performance Requirements**:
+- What are the load/response time targets?
+- Are there any scalability requirements?
+- What are the expected concurrent user limits?
+
+**Boundary Conditions**:
+- What are the min/max/empty/null cases?
+- Are there any size limits (file size, content length, etc.)?
+- What are the validation rules?
+
+**List API Requirements** (if applicable):
+- Does this endpoint return a list/collection?
+- What fields can be filtered?
+- What is the pagination strategy (page-based, cursor-based)?
+- What fields can be sorted?
+- What are the default page size and sorting?
+- Are there any filter/sort validation rules?
+
+**Integration with Test Planning**:
+- Document test scenario clarifications in NOTES.md
+- Reference test scenarios in spec.md section 3.5 (Test Scenarios)
+- Ensure test scenarios link to requirements (FR-XXX)
+</test_scenario_clarifications>
 
 <responsibilities>
 - Call `/clarify` slash command to resolve specification ambiguities

@@ -9,8 +9,9 @@ Workflow Commands:
     clarify <feature>           - Interactive clarification workflow
     plan <feature>              - Generate implementation plan from spec
     tasks <feature>             - Generate concrete TDD tasks
-    validate <feature>          - Cross-artifact consistency analysis
+    validate <feature>         - Cross-artifact consistency analysis
     implement <feature>         - Execute tasks with TDD
+    test <feature>              - Run test suite with optional filtering
     debug <feature>             - Debug errors and update error-log.md
     optimize <feature>          - Production-readiness validation
     preview <feature>           - Manual UI/UX testing
@@ -282,6 +283,19 @@ def cmd_finalize(args):
         print(stdout, end='')
         return code
     return run_script('finalize-workflow', script_args)
+
+def cmd_test(args):
+    """Run test suite with optional filtering"""
+    script_args = []
+    if args.feature:
+        script_args.append(args.feature)
+    if hasattr(args, 'type') and args.type:
+        script_args.extend(['--type', args.type])
+    if hasattr(args, 'coverage') and args.coverage:
+        script_args.append('--coverage')
+    if hasattr(args, 'watch') and args.watch:
+        script_args.append('--watch')
+    return run_script('test', script_args)
 
 def cmd_feature(args):
     """Run feature workflow orchestration"""
@@ -694,6 +708,14 @@ Examples:
     finalize_parser.add_argument('feature', nargs='?', help='Feature slug (optional, auto-detected if in feature dir)')
     finalize_parser.add_argument('--json', action='store_true', help='Output as JSON')
 
+    # test
+    test_parser = subparsers.add_parser('test', help='Run test suite with optional filtering by type')
+    test_parser.add_argument('feature', nargs='?', help='Feature slug (optional, auto-detected if in feature dir)')
+    test_parser.add_argument('--type', choices=['unit', 'integration', 'e2e', 'all'], default='all',
+                           help='Test type filter (default: all)')
+    test_parser.add_argument('--coverage', action='store_true', help='Validate coverage against spec.md scenarios')
+    test_parser.add_argument('--watch', action='store_true', help='Watch mode for TDD workflow')
+
     # feature
     feature_parser = subparsers.add_parser('feature', help='Orchestrate full feature workflow')
     feature_parser.add_argument('arguments', nargs='?', help='Feature description, slug, next, continue, epic:name, sprint:num')
@@ -897,6 +919,7 @@ Examples:
         'debug': cmd_debug,
         'optimize': cmd_optimize,
         'finalize': cmd_finalize,
+        'test': cmd_test,
         'feature': cmd_feature,
         'ship-finalize': cmd_ship_finalize,
         'ship-prod': cmd_ship_prod,

@@ -17,10 +17,20 @@ Spec-Flow coordinates multiple coding tools through a single shared canon. Every
 
 ## Hard rules
 
-1. Never fork new “top-level religions.” Add new integrations under their dedicated folder and mirror the shared canon from `.spec-flow/`.
+1. Never fork new "top-level religions." Add new integrations under their dedicated folder and mirror the shared canon from `.spec-flow/`.
 2. All tools may read `.claude/**` for reference, yet non-Claude edits are prohibited.
 3. Epic work begins under `epics/<slug>/`; features live in `specs/<feature>/` and must link back to their parent epic inside `state.yaml`.
-4. When progressing any phase, update the relevant `state.yaml` and stop at the documented review boundaries (no macro “run everything” flows).
+4. When progressing any phase, update the relevant `state.yaml` and stop at the documented review boundaries (no macro "run everything" flows).
 5. Persistent learnings or roadmap shifts belong in `.spec-flow/memory/` and should be reflected in the shared docs before modifying tool-specific trees.
+
+## Testing Principles
+
+1. **User-Driven Budget Decisions**: When test execution time exceeds budget, agents must prompt users to either increase budget or select tests to skip. No automatic test reduction.
+
+2. **List API Requirements**: All endpoints returning lists/collections must test filtering, pagination, and sorting scenarios.
+
+3. **Test Reuse Before Creation**: Before creating new tests, agents must check for existing tests covering the same requirements/scenarios.
+
+4. **Risk-Based Prioritization**: Focus testing on high-risk areas (security, data integrity, critical paths) with P1/P2/P3 prioritization.
 
 Follow these rules and every agent—Claude, Codex, Cursor, or future additions—will operate from the same source of truth.

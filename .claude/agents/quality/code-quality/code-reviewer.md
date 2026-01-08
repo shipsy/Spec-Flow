@@ -152,13 +152,14 @@ npm run typecheck || {
   exit 1
 }
 
-npm test || {
+# Run tests using centralized /test command
+/test || {
   echo "Tests failed - check output"
-  npm test -- --verbose
   exit 1
 }
 
-npm run test:coverage
+# Run with coverage
+/test --coverage
 # Coverage MUST BE ≥80%
 </bash_commands>
 </frontend_gates>
@@ -174,9 +175,9 @@ mypy . || {
   exit 1
 }
 
-pytest --cov || {
+# Run tests using centralized /test command
+/test --coverage || {
   echo "Tests failed or coverage <80%"
-  pytest -v  # Verbose output
   exit 1
 }
 </bash_commands>
@@ -326,12 +327,12 @@ $(grep -r "⚠️" review-output.txt | head -10)
 
 - Lint: $(cd apps/app && npm run lint &>/dev/null && echo "✅" || echo "❌")
 - Types: $(cd apps/app && npm run typecheck &>/dev/null && echo "✅" || echo "❌")
-- Tests: $(cd apps/app && npm test &>/dev/null && echo "✅" || echo "❌")
-- Coverage: $(cd apps/app && npm run test:coverage 2>/dev/null | grep "All files" | awk '{print $4}')
+- Tests: $(cd apps/app && bash .spec-flow/scripts/bash/test.sh &>/dev/null && echo "✅" || echo "❌")
+- Coverage: $(cd apps/app && bash .spec-flow/scripts/bash/test.sh --coverage 2>/dev/null | grep -i "coverage" | head -1)
 - Backend Lint: $(cd api && ruff check . &>/dev/null && echo "✅" || echo "❌")
 - Backend Types: $(cd api && mypy . &>/dev/null && echo "✅" || echo "❌")
-- Backend Tests: $(cd api && pytest &>/dev/null && echo "✅" || echo "❌")
-- Backend Coverage: $(cd api && pytest --cov 2>/dev/null | grep "TOTAL" | awk '{print $4}')
+- Backend Tests: $(cd api && bash .spec-flow/scripts/bash/test.sh &>/dev/null && echo "✅" || echo "❌")
+- Backend Coverage: $(cd api && bash .spec-flow/scripts/bash/test.sh --coverage 2>/dev/null | grep -i "coverage" | head -1)
 
 ## Recommendations
 

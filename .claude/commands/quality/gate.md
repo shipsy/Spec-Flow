@@ -83,20 +83,11 @@ Use Glob to detect project files:
 
 ### Step CI-2: Run Tests
 
-Execute test command for detected project type:
+Execute tests using centralized /test command:
 
 ```bash
-# Node.js
-npm test 2>&1
-
-# Python
-pytest 2>&1
-
-# Rust
-cargo test 2>&1
-
-# Go
-go test ./... 2>&1
+# Use centralized /test command
+/test
 ```
 
 **Capture**: Exit code and output
