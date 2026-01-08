@@ -40,14 +40,17 @@ That's it. Spec-Flow handles the rest: writing specs, planning architecture, bre
 # Add Spec-Flow as a submodule in your project root
 git submodule add https://github.com/shipsy/Spec-Flow.git .spec-flow-src
 
-# Copy workflow files into your project
+# Copy workflow directories into your project
 cp -r .spec-flow-src/.claude .
 cp -r .spec-flow-src/.spec-flow .
-cp .spec-flow-src/CLAUDE.md .
-cp .spec-flow-src/AGENTS.md .
+
+# Append Spec-Flow rules to existing files (see "Multi-Agent Integration" section below)
+# - CLAUDE.md: Copy or merge full CLAUDE.md from .spec-flow-src/CLAUDE.md
+# - AGENTS.md: Append Spec-Flow agent coordination rules
+# - .cursorrules: Append Spec-Flow enforcement rules
 
 # Commit the submodule and copied files
-git add .gitmodules .spec-flow-src .claude .spec-flow CLAUDE.md AGENTS.md
+git add .gitmodules .spec-flow-src .claude .spec-flow
 git commit -m "chore: add Spec-Flow workflow"
 ```
 
@@ -62,10 +65,10 @@ This keeps Spec-Flow as a tracked submodule, making updates easy while the workf
 Spec-Flow runs you through:
 
 ```
-spec → plan → tasks → implement → optimize → ship
+spec → clarify → plan → [APPROVAL] → tasks → [APPROVAL] → implement → audit → optimize → ship
 ```
 
-Each phase produces artifacts, runs quality checks, and hands off cleanly to the next.
+Each phase produces artifacts, approval gates ensure human oversight, and quality checks run before deployment.
 
 ### 3. That's it
 
@@ -101,6 +104,21 @@ git submodule update --init --recursive
 ```
 
 ---
+
+## Workflow Overview
+
+```mermaid
+flowchart LR
+    spec["/spec"] --> clarify["/clarify"]
+    clarify --> plan["/plan"]
+    plan --> approval1{"/approve planning"}
+    approval1 --> tasks["/tasks"]
+    tasks --> approval2{"/approve tasks"}
+    approval2 --> implement["/implement"]
+    implement --> audit["/audit-implementation"]
+    audit --> optimize["/optimize"]
+    optimize --> ship["/ship"]
+```
 
 ## The Workflow
 
@@ -148,11 +166,27 @@ For small changes that don't need the full workflow:
 | Command | Phase |
 |---------|-------|
 | `/spec` | Generate specification |
+| `/clarify` | Refine spec with stakeholder Q&A |
 | `/plan` | Create implementation plan |
 | `/tasks` | Break down into TDD tasks |
 | `/implement` | Execute tasks |
+| `/audit-implementation` | Detect drift between spec and code |
 | `/optimize` | Run quality gates |
 | `/ship` | Deploy to staging/production |
+
+### Approval Gates
+
+| Command | What it does |
+|---------|--------------|
+| `/approve planning` | Approve plan.md, ITDs, core-functions → unlock `/tasks` |
+| `/approve tasks` | Approve tasks.md → unlock `/implement` |
+
+### Artifact Commands
+
+| Command | What it does |
+|---------|--------------|
+| `/itd "create: topic"` | Create Important Technical Decision ([details](#itds-important-technical-decisions)) |
+| `/core-functions "create: desc"` | Document product core functions ([details](#core-functions)) |
 
 ### Project Setup
 
@@ -179,7 +213,20 @@ Generates `spec.md` with:
 - Acceptance criteria
 - Success metrics
 
-### 2. Planning Phase
+### 2. Clarification Phase
+
+```bash
+/clarify
+```
+
+Refines the specification through:
+
+- Stakeholder Q&A to resolve ambiguities
+- Edge case identification
+- Constraint validation
+- Requirement prioritization
+
+### 3. Planning Phase
 
 ```bash
 /plan
@@ -192,7 +239,23 @@ Creates `plan.md` with:
 - Code reuse opportunities
 - Risk assessment
 
-### 3. Task Breakdown
+Also generates:
+- **ITDs** — Important Technical Decisions for architectural choices
+- **Core Functions** — What the product does (for epics)
+
+### 4. Planning Approval Gate
+
+```bash
+/approve planning
+```
+
+**Mandatory checkpoint** before task breakdown:
+
+- Reviews plan.md, ITDs, and core-functions.md
+- Sets `approvals.planning = true` in state.yaml
+- Unlocks the `/tasks` command
+
+### 5. Task Breakdown
 
 ```bash
 /tasks
@@ -205,7 +268,19 @@ Produces `tasks.md` with:
 - Dependency ordering
 - Acceptance criteria per task
 
-### 4. Implementation
+### 6. Tasks Approval Gate
+
+```bash
+/approve tasks
+```
+
+**Mandatory checkpoint** before implementation:
+
+- Reviews tasks.md for completeness
+- Sets `approvals.tasks = true` in state.yaml
+- Unlocks the `/implement` command
+
+### 7. Implementation
 
 ```bash
 /implement
@@ -218,7 +293,20 @@ Executes tasks with:
 - Parallel batch execution
 - Automatic error recovery
 
-### 5. Quality Gates
+### 8. Implementation Audit
+
+```bash
+/audit-implementation
+```
+
+Verifies code matches spec/plan/tasks:
+
+- 6-pass drift detection
+- Requirement traceability check
+- Scope creep identification
+- Architecture compliance validation
+
+### 9. Quality Gates
 
 ```bash
 /optimize
@@ -232,7 +320,7 @@ Runs parallel checks:
 - Code review
 - Test coverage validation
 
-### 6. Deployment
+### 10. Deployment
 
 ```bash
 /ship
@@ -248,6 +336,8 @@ Handles:
 ## Planning Artifacts
 
 Spec-Flow generates structured planning artifacts that ensure implementation aligns with requirements.
+
+> **Commands**: [`/itd`](#artifact-commands) | [`/core-functions`](#artifact-commands)
 
 ### ITDs (Important Technical Decisions)
 
@@ -303,6 +393,8 @@ Non-Obvious Logic: What transformation happens that isn't obvious
 
 Spec-Flow enforces **mandatory approval gates** before implementation can begin.
 
+> **Commands**: [`/approve planning`](#approval-gates) | [`/approve tasks`](#approval-gates)
+
 ```
 /spec → /clarify → /plan → [APPROVAL] → /tasks → [APPROVAL] → /implement → /audit → /optimize → /ship
 ```
@@ -342,6 +434,8 @@ After `/tasks` completes:
 
 After implementation, `/audit-implementation` verifies that code matches spec, plan, and tasks.
 
+> **Command**: [`/audit-implementation`](#phase-commands)
+
 ```bash
 /audit-implementation
 ```
@@ -367,28 +461,45 @@ After implementation, `/audit-implementation` verifies that code matches spec, p
 
 **Workflow position**: `implement → audit-implementation → optimize`
 
-## Cursor Integration
+## Multi-Agent Integration
 
-Spec-Flow supports Cursor IDE alongside Claude Code. See [AGENTS.md](AGENTS.md) for multi-agent coordination.
+Spec-Flow coordinates multiple AI agents (Claude Code, Cursor, Codex) through a shared canon. If your project already has `CLAUDE.md`, `AGENTS.md`, or `.cursorrules` files, **append** the Spec-Flow rules rather than overwriting them.
 
-### Required Files
+### Append to CLAUDE.md
 
-| File | Purpose |
-|------|---------|
-| `.cursor/` | Cursor-specific prompts and adapters |
-| `.cursorrules` | Repo-level rules for Cursor |
+If your project has an existing `CLAUDE.md` file, manually append the full Spec-Flow workflow instructions:
 
-### Key Rules for Cursor
+```bash
+# Append the full Spec-Flow CLAUDE.md content to your existing file
+cat .spec-flow-src/CLAUDE.md >> CLAUDE.md
+```
 
-1. **Shared canon** lives in `.spec-flow/` (repo map, domain guides, state schemas)
-2. **`.claude/` is read-only** for Cursor—use as reference only
-3. **Cursor-specific files** belong in `.cursor/`
-4. **Run one phase per session** unless explicitly chaining
-5. **Honor approval gates**—check `state.yaml` before implementation
+**Note**: If your `CLAUDE.md` is empty, simply copy the entire file:
 
-### Cursor Rules Template
+```bash
+cp .spec-flow-src/CLAUDE.md .
+```
 
-Add to `.cursorrules`:
+The root `CLAUDE.md` in this Spec-Flow repository contains the full workflow instructions (475 lines) following the WHAT/WHY/HOW framework, including all commands, deployment models, quality gates, and deep references.
+
+### Append to AGENTS.md
+
+If your project has an existing `AGENTS.md` file, append this section:
+
+```markdown
+## Spec-Flow Agent Coordination
+
+- `.spec-flow/` holds the canonical workflow docs, repo map, state schemas, memory, and automation scripts
+- `epics/<slug>/state.yaml` is the single source of truth for epic phase progress
+- `.claude/` is read-only for non-Claude agents—use as reference only
+- `.cursor/` is for Cursor-specific prompts and adapters
+- When progressing any phase, update `state.yaml` and stop at approval gates
+- Persistent learnings belong in `.spec-flow/memory/`
+```
+
+### Append to .cursorrules
+
+If your project has an existing `.cursorrules` file, add these lines:
 
 ```
 # Spec-Flow Enforcement
@@ -397,6 +508,14 @@ Add to `.cursorrules`:
 - Follow TDD enforcement for implementation tasks
 - Reference .claude/commands/ for phase behavior patterns
 ```
+
+### Key Rules for Multi-Agent Coordination
+
+1. **Shared canon** lives in `.spec-flow/` (repo map, domain guides, state schemas)
+2. **`.claude/` is read-only** for non-Claude agents—use as reference only
+3. **Cursor-specific files** belong in `.cursor/`
+4. **Run one phase per session** unless explicitly chaining
+5. **Honor approval gates**—check `state.yaml` before implementation
 
 ## Project Structure
 
