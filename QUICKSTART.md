@@ -49,7 +49,7 @@ If you prefer to clone the repository first:
 ```bash
 # Clone to a workspace directory (not inside your project)
 cd ~/projects  # or C:\Projects on Windows
-git clone https://github.com/marcusgoll/Spec-Flow.git
+git clone https://github.com/shipsy/Spec-Flow.git
 cd Spec-Flow
 ```
 
@@ -317,8 +317,8 @@ Edit templates in `.spec-flow/templates/` to match your project's needs.
 
 ### Join the Community
 
-- **Report issues**: [GitHub Issues](https://github.com/marcusgoll/Spec-Flow/issues)
-- **Ask questions**: [GitHub Discussions](https://github.com/marcusgoll/Spec-Flow/discussions)
+- **Report issues**: [GitHub Issues](https://github.com/shipsy/Spec-Flow/issues)
+- **Ask questions**: [GitHub Discussions](https://github.com/shipsy/Spec-Flow/discussions)
 - **Contribute**: See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
@@ -349,7 +349,7 @@ Claude Code caches settings. After editing `.claude/settings.local.json`, restar
 
 ### More Help
 
-See the full [Troubleshooting Guide](docs/troubleshooting.md) or [file an issue](https://github.com/marcusgoll/Spec-Flow/issues).
+See the full [Troubleshooting Guide](docs/troubleshooting.md) or [file an issue](https://github.com/shipsy/Spec-Flow/issues).
 
 ---
 

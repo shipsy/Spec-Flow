@@ -12,13 +12,13 @@
     "planning",
     "automation"
   ],
-  "homepage": "https://github.com/marcusgoll/Spec-Flow#readme",
+  "homepage": "https://github.com/shipsy/Spec-Flow#readme",
   "bugs": {
-    "url": "https://github.com/marcusgoll/Spec-Flow/issues"
+    "url": "https://github.com/shipsy/Spec-Flow/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/marcusgoll/Spec-Flow.git"
+    "url": "git+https://github.com/shipsy/Spec-Flow.git"
   },
   "license": "MIT",
   "author": "Marcus Gollahon <marcus@example.com>",

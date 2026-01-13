@@ -818,8 +818,8 @@ npm update -g spec-flow
 
 **Documentation:**
 
-- GitHub: https://github.com/marcusgoll/Spec-Flow
-- Issues: https://github.com/marcusgoll/Spec-Flow/issues
+- GitHub: https://github.com/shipsy/Spec-Flow
+- Issues: https://github.com/shipsy/Spec-Flow/issues
 
 ---
 

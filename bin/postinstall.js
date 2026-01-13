@@ -41,7 +41,7 @@ const fs = require('fs');
     chalk.green(`  ${dlx} spec-flow install-gemini-extension`),
     '',
     chalk.white('Documentation:'),
-    chalk.gray('  https://github.com/marcusgoll/Spec-Flow')
+    chalk.gray('  https://github.com/shipsy/Spec-Flow')
   ].join('\n');
 
   const banner = [

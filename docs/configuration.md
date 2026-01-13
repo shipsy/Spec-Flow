@@ -897,4 +897,4 @@ It takes ~2 minutes to answer 8 questions.
 
 ---
 
-**Need help?** [File an issue](https://github.com/marcusgoll/Spec-Flow/issues) or check [GitHub Discussions](https://github.com/marcusgoll/Spec-Flow/discussions).
+**Need help?** [File an issue](https://github.com/shipsy/Spec-Flow/issues) or check [GitHub Discussions](https://github.com/shipsy/Spec-Flow/discussions).

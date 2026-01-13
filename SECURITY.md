@@ -27,7 +27,7 @@ Instead, please report them via one of the following methods:
    - Fill out the form with details
 
 2. **Direct Contact**
-   - Contact the maintainer [@marcusgoll](https://github.com/marcusgoll) directly via GitHub
+   - Contact the maintainer [@shipsy](https://github.com/shipsy) directly via GitHub (Original author: [@marcusgoll](https://github.com/marcusgoll))
    - Use the subject line: `[SECURITY] Vulnerability Report`
 
 ### What to Include

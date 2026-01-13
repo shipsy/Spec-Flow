@@ -338,9 +338,9 @@ pwsh -File node_modules\spec-flow\.spec-flow\scripts\powershell\setup-github-lab
 
 - **Issue Templates**: `.github/ISSUE_TEMPLATE/` (copied to your repo)
 - **Technical Guide**: `node_modules/spec-flow/docs/github-roadmap-migration.md`
-- **Spec-Flow Docs**: https://github.com/marcusgoll/Spec-Flow
+- **Spec-Flow Docs**: https://github.com/shipsy/Spec-Flow
 - **GitHub Issues**: https://docs.github.com/en/issues
 
 ---
 
-**Questions?** Create an issue: https://github.com/marcusgoll/Spec-Flow/issues
+**Questions?** Create an issue: https://github.com/shipsy/Spec-Flow/issues

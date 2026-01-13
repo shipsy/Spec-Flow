@@ -18,7 +18,7 @@ We expect everyone who participates in the Spec-Flow Workflow Kit to follow this
 
 If you observe behavior that violates this code, please report it confidentially:
 
-- **GitHub**: Open an issue and tag @marcusgoll (maintainer)
+- **GitHub**: Open an issue and tag @shipsy (maintainer) or @marcusgoll (original author)
 - **Email**: For sensitive matters, contact the maintainer directly via GitHub profile
 
 Maintainers will review reports promptly and take appropriate action.

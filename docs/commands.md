@@ -396,7 +396,7 @@ Repository maintenance commands (not included in npm package).
 
 **Support:**
 
-- [GitHub Issues](https://github.com/marcusgoll/Spec-Flow/issues)
+- [GitHub Issues](https://github.com/shipsy/Spec-Flow/issues)
 - [README](../README.md)
 
 ---

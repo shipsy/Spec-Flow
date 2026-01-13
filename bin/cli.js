@@ -388,7 +388,7 @@ program
     console.log(chalk.green('  npx spec-flow status --check\n'));
 
     console.log(chalk.white('Documentation:'));
-    console.log(chalk.gray('  https://github.com/marcusgoll/Spec-Flow\n'));
+    console.log(chalk.gray('  https://github.com/shipsy/Spec-Flow\n'));
   });
 
 // Parse arguments
